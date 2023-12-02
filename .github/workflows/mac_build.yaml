@@ -1,0 +1,34 @@
+name: macOS Build
+
+on:
+  workflow_dispatch: ~
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.2.3'
+        arch: 'osx_x64_clang_14'
+
+    - uses: actions/checkout@v3
+
+    - name: Install Xcode
+      uses: actions/setup-xcode@v3
+      with:
+        xcode-version: '14.2'
+
+    - name: Setup Build Tools
+      run: |
+        xcode-select --version
+        uname -m
+        sudo installer -pkg /Applications/Xcode.app/Contents/Resources/Packages/DeveloperToolsCLI.pkg -target /
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        qmake src/project.pro -spec macx-clang CONFIG+=release
+        make
